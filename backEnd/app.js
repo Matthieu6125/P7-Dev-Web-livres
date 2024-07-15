@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const app = express();
 const userRoutes = require('./routes/user');
 const bodyParser = require('body-parser');
+const { createBook } = require('./Controllers/Books');
+const auth = require('./middleware/auth');
+const multer = require('./middleware/multer-config')
 
 
 app.use((req, res, next) => {
@@ -23,6 +26,8 @@ mongoose.connect('mongodb+srv://Matthieu:1234@cluster0.4szmqif.mongodb.net/',
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use('/api/auth', userRoutes);
+
+app.post('/api/books', auth, multer, createBook);
 
 
 module.exports = app;
