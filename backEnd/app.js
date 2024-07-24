@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const app = express();
 const userRoutes = require('./routes/user');
 const bodyParser = require('body-parser');
-const { createBook } = require('./Controllers/Books');
 const auth = require('./middleware/auth');
-const multer = require('./middleware/multer-config')
-
-
+const path = require('path');
+const multer = require('./middleware/multer-config');
+const { createBook } = require('./Controllers/Books');
+const { getBooks } = require('./Controllers/Books');
+const { getBooksId } = require('./Controllers/Books');
+const { putBookId } = require('./Controllers/Books');
+const { deleteBookId } = require('./Controllers/Books');
+const { addRating } = require('./Controllers/Books');
+const { getBestRating } = require('./Controllers/Books');
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
@@ -28,6 +33,13 @@ mongoose.connect('mongodb+srv://Matthieu:1234@cluster0.4szmqif.mongodb.net/',
 app.use('/api/auth', userRoutes);
 
 app.post('/api/books', auth, multer, createBook);
+app.get('/api/books/bestrating', getBestRating);
 
+app.get('/api/books', getBooks);
+app.get('/api/books/:id', getBooksId);
+app.put('/api/books/:id', auth, putBookId);
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.delete('/api/books/:id', auth, deleteBookId);
+app.post('/api/books/:id/rating', auth, addRating);
 
 module.exports = app;
