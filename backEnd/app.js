@@ -31,10 +31,8 @@ mongoose.connect('mongodb+srv://Matthieu:1234@cluster0.4szmqif.mongodb.net/',
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use('/api/auth', userRoutes);
-
 app.post('/api/books', auth, multer, createBook);
 app.get('/api/books/bestrating', getBestRating);
-
 app.get('/api/books', getBooks);
 app.get('/api/books/:id', getBooksId);
 app.put('/api/books/:id', auth, putBookId);
