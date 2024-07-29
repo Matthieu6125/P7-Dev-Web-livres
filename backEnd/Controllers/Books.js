@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 const Book = require('../models/Book');
 const Schema = mongoose.Schema;
-const Rating = require('../models/Rating');
 const fs = require('fs');
 const { error } = require('console');
 
 exports.createBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     const book = new Book({
-        ...bookObject, //
+        ...bookObject, 
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
       });
   book.save().then(() => {
@@ -37,9 +36,35 @@ exports.getBooksId = (req, res, next) => {
 };
 
 exports.putBookId = (req, res, next) => {
-  Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-  .then(() => res.status(200).json({ message: 'Objet modifié !'}))
-  .catch(error => res.status(400).json({ error }));
+  console.log("putBook appelé");
+  const bookObject = req.file ? {
+    ...JSON.parse(req.body.book),
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+} : { ...req.body };
+
+delete bookObject._userId;
+
+Book.findOne({_id: req.params.id})
+    .then((book) => {      
+      if (book.userId != req.auth.userId) {
+            res.status(403).json({ error });
+        } else { 
+          const filename = book.imageUrl.split('/images/')[1];
+          fs.unlink(`images/${filename}`, (err) => {
+            if (err) {
+                return res.status(500).json({ err });
+            }
+            Book.updateOne({ _id: req.params.id}, { ...bookObject, _id: req.params.id})
+            .then(() => res.status(200).json({message : 'Objet modifié!'}))
+            .catch(error => res.status(403).json({ error }));
+        });
+            
+        }
+    })
+    .catch((error) => {
+        res.status(400).json({ error });
+    });
+
 };
 
 
@@ -60,7 +85,7 @@ exports.deleteBookId = (req, res, next) => {
                 return res.status(500).json({ err });
             }
 
-            Book.deleteOne({ _id: book._id }) // Utilisez book._id ici
+            Book.deleteOne({ _id: book._id })
                 .then(() => {
                     res.status(200).json({ message: 'Objet supprimé !' });
                 })

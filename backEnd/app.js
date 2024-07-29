@@ -5,7 +5,7 @@ const userRoutes = require('./routes/user');
 const bodyParser = require('body-parser');
 const auth = require('./middleware/auth');
 const path = require('path');
-const multer = require('./middleware/multer-config');
+const { upload , optimize } = require('./middleware/multer-config');
 const { createBook } = require('./Controllers/Books');
 const { getBooks } = require('./Controllers/Books');
 const { getBooksId } = require('./Controllers/Books');
@@ -31,11 +31,11 @@ mongoose.connect('mongodb+srv://Matthieu:1234@cluster0.4szmqif.mongodb.net/',
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use('/api/auth', userRoutes);
-app.post('/api/books', auth, multer, createBook);
+app.post('/api/books', auth, upload, optimize, createBook);
 app.get('/api/books/bestrating', getBestRating);
 app.get('/api/books', getBooks);
 app.get('/api/books/:id', getBooksId);
-app.put('/api/books/:id', auth, putBookId);
+app.put('/api/books/:id', auth, upload, optimize, putBookId);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.delete('/api/books/:id', auth, deleteBookId);
 app.post('/api/books/:id/rating', auth, addRating);
