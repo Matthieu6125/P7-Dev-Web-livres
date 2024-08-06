@@ -8,7 +8,8 @@ exports.createBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     const book = new Book({
         ...bookObject, 
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        averageRating: 0
       });
   book.save().then(() => {
       res.status(201).json({ message: 'Post saved successfully!'});
@@ -114,11 +115,13 @@ exports.addRating = (req, res, next) => {
            grade: req.body.rating
        };
           book.ratings.push(rating);
+          const filteredRatings = book.ratings.filter(r => r.userId !== book.userId );
           let totalRating = 0;
-          for (let rating of book.ratings) {
-            totalRating += rating.grade;
-          }
-          book.averageRating = totalRating / book.ratings.length ; 
+        filteredRatings.forEach(rating => {
+          totalRating += rating.grade;
+        });
+        
+        book.averageRating = totalRating / filteredRatings.length;
           return book.save();
     })
     .then((updatedBook) => res.status(201).json(updatedBook))
